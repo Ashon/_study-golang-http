@@ -2,24 +2,26 @@ package views
 
 import (
 	"errors"
-	"net/http"
 
 	"github.com/ashon/gotest/exc"
+	"github.com/ashon/gotest/request"
+	"github.com/ashon/gotest/response"
 )
 
 // Returns simple greetings message
-func Hello(w http.ResponseWriter, req *http.Request) error {
-	w.Write([]byte("hello world"))
-
-	return nil
+func Hello(*request.Request) *response.Response {
+	res := &response.Response{Data: "hello world"}
+	return res
 }
 
 // Raises Panic
-func RaisePanic(w http.ResponseWriter, r *http.Request) error {
-	return exc.StatusError{Code: 500, Err: errors.New("exceptions")}
+func RaisePanic(*request.Request) *response.Response {
+	return &response.Response{
+		Err: exc.StatusError{
+			Code: 500, Err: errors.New("server error yeah~~")}}
 }
 
 // Unexpected
-func UnexpectedPanic(w http.ResponseWriter, r *http.Request) error {
-	panic("nope")
+func UnexpectedPanic(*request.Request) *response.Response {
+	panic("force raise panic")
 }
