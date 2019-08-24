@@ -4,17 +4,13 @@ import (
 	"net/http"
 
 	"github.com/ashon/gotest/config"
-	"github.com/ashon/gotest/views"
+	"github.com/ashon/gotest/logger"
 )
 
+// Build http server and run
 func RunServer(cfg config.Config) {
-	routes := map[string](func(http.ResponseWriter, *http.Request) error){
-		"/hello": views.Hello,
-		"/panic": views.RaisePanic,
-		"/unexc": views.UnexpectedPanic,
-	}
-
-	for route, view := range routes {
+	for route, view := range Routes {
+		logger.Info(route, view)
 		http.Handle(route, RequestHandler{view})
 	}
 

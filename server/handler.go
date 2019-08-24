@@ -1,10 +1,11 @@
 package server
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/ashon/gotest/exc"
+	"github.com/ashon/gotest/logger"
 )
 
 type RequestHandler struct {
@@ -18,7 +19,7 @@ func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch e := error.(type) {
 
 		case exc.Error:
-			log.Printf("HTTP %d - %s", e.Status(), e)
+			logger.Error(fmt.Sprintf("HTTP %d - %s", e.Status(), e))
 			http.Error(w, e.Error(), e.Status())
 
 		default:
