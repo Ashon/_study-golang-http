@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/ashon/gotest/config"
-	"github.com/ashon/gotest/server"
+	"github.com/ashon/gotest/app"
+	"github.com/ashon/gotest/core"
 )
 
 func main() {
-	var cfg config.Config
+	var cfg core.Config
 	cfg.ListenAddress = ":8088"
+	cfg.Routes = app.Routes
 
-	server.RunServer(cfg)
+	core.RunServer(cfg)
 }

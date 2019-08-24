@@ -1,4 +1,4 @@
-package exc
+package core
 
 type Error interface {
 	error

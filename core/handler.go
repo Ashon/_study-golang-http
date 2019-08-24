@@ -1,24 +1,19 @@
-package server
+package core
 
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/ashon/gotest/exc"
-	"github.com/ashon/gotest/logger"
-	"github.com/ashon/gotest/request"
-	"github.com/ashon/gotest/response"
 )
 
 type RequestHandler struct {
-	HandleRequest func(*request.Request) *response.Response
+	HandleRequest func(*Request) *Response
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	switch e := err.(type) {
 
-	case exc.Error:
-		logger.Error(fmt.Sprintf("HTTP %d - %s", e.Status(), e))
+	case Error:
+		Logger.Error(fmt.Sprintf("HTTP %d - %s", e.Status(), e))
 		http.Error(w, e.Error(), e.Status())
 
 	default:
@@ -34,15 +29,15 @@ func InternalServerError(w http.ResponseWriter) {
 
 func RecoverPanic(w http.ResponseWriter) {
 	if r := recover(); r != nil {
-		logger.Error("Server Panic:", r)
+		Logger.Error("Server Panic:", r)
 		InternalServerError(w)
 	}
 }
 
 func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := request.Request{Req: r}
+	req := Request{Req: r}
 
-	logger.Info(
+	Logger.Info(
 		req.Req.Proto,
 		req.Req.Method,
 		req.Req.URL.Path,
