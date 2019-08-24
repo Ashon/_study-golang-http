@@ -8,9 +8,15 @@ import (
 )
 
 func RunServer(cfg config.Config) {
-	http.Handle("/hello", RequestHandler{views.Hello})
-	http.Handle("/panic", RequestHandler{views.RaisePanic})
-	http.Handle("/unexc", RequestHandler{views.UnexpectedPanic})
+	routes := map[string](func(http.ResponseWriter, *http.Request) error){
+		"/hello": views.Hello,
+		"/panic": views.RaisePanic,
+		"/unexc": views.UnexpectedPanic,
+	}
+
+	for route, view := range routes {
+		http.Handle(route, RequestHandler{view})
+	}
 
 	http.ListenAndServe(cfg.ListenAddress, nil)
 }
