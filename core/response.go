@@ -1,9 +1,5 @@
 package core
 
-type ResponseError interface {
-	GetError() StatusError
-}
-
 type Response struct {
 	Data string
 	Err  StatusError

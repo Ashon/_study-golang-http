@@ -23,6 +23,7 @@
       - [View, Route Management](#view-route-management)
       - [Middleware Management](#middleware-management)
       - [Request Flow Control](#request-flow-control)
+  - [소감](#%ec%86%8c%ea%b0%90)
   - [무엇을 배웠나](#%eb%ac%b4%ec%97%87%ec%9d%84-%eb%b0%b0%ec%9b%a0%eb%82%98)
     - [net/http](#nethttp)
     - [go mod](#go-mod)
@@ -177,13 +178,61 @@ flask_app = build_application(settings)
 flask_app.run(...)
 ```
 
-이런식으로 관리하게 되면, Django 에서의 DI를 이용해 미들웨어를 관리하는 것 처럼 application의 네임스페이스에 설정한 미들웨어를 주입하고 런타임에서 사용할 수 있게 해 준다.
+이런식으로 관리하게 되면, Django 에서의 DI를 이용해 미들웨어를 관리하는 것 처럼
+application의 네임스페이스에 설정한 미들웨어를 주입하고 런타임에서 사용할 수 있게 해 준다.
 
-미들웨어 로직과 애플리케이션 코어와의 루즈한 커플링을 제공해 줌으로써, 넓은 범위로의 재사용성을 보장해 줄 수 있다.
+미들웨어 로직과 애플리케이션 코어와의 루즈한 커플링을 제공해 줌으로써,
+넓은 범위로의 재사용성을 보장해 줄 수 있다.
 
 ### Managing Views
 
+Flask를 예로 들면 간단한 API View는 데코레이터를 이용해 정의할 수 있다.
+
+``` python
+# file: app.py
+from flask import Flask
+
+
+app = Flask(__name__)
+
+
+@app.route()
+def hello():
+    return 'hello world'
+```
+
+실제 비즈니스 로직을 처리하는 거대한 애플리케이션을 만들기 위해서는 애플리케이션 컨텍스트와
+강하게 연결되는 데코레이터 형식 보다는, 구현된 비즈니스 로직을 가지고 사용할 주체에서 빌드업 해서 쓰는게
+옳다고 생각한다.
+
+``` python
+# file: views.py
+def hello():
+    return 'hello world'
+```
+
+``` python
+# file: app.py
+from flask import Flask
+from views import hello
+
+
+app = Flask(__name__)
+app.route('/', methods=['GET'])(hello)
+```
+
+이런식으로 작성하면 비즈니스 로직을 애플리케이션 로직으로부터 분리해서 작게 관리할 수 있다.
+
+위에서 설명한 DI와 조합하면, 애플리케이션 설정으로 사용자가 필요한 API들을 하나의 `suite`로서
+관리할 수 있게 되는 장점이 있다.
+
 ## Implementation in Go
+
+글에 적은 파이썬 경험들을 Go로 표현해 보면서, Go의 사용성이나 Go의 철학들을 이해해 보면 좋을 것 같다.
+
+유저 애플리케이션을 작성하기 위해 API View들을 비교적 쉽게 만들 수 있게 해 보고, API Route 관리,
+프레임워크의 리퀘스트 처리 흐름을 사용자가 일부 제어 가능하도록 하는 미들웨어 등을 작성할 수 있는
+기능을 구현 해 보고자 했다.
 
 ### Features
 
@@ -192,6 +241,17 @@ flask_app.run(...)
 #### Middleware Management
 
 #### Request Flow Control
+
+## 소감
+
+- `tab`은 영 적응이 안되지만 `vscode`의 코딩 어시스턴트 기능들에 의존했기 때문에,
+  별다른 불편함 없이 코드를 작성할 수 있었다.
+  - 타입 시스템으로 코드를 작성하면서 바로 코드 스펙들을 알 수 있는게 장점이기도 하다고 생각하지만..
+    너무 IDE 의존적이 되어, 이런 부분들에 무뎌질 수 있겠다는 생각이 들었다.
+- 파이썬에 비해 일부 비즈니스 로직들의 표현이, verbose 하다는 느낌은 여전히 지울 수 없다.
+  - 성능을 위해선 어쩔 수 없는 부분인 걸까..
+- 프레임워크에서 할 일들이 표현되는 방식을 보면, 결국 `Go`, `Python` 할 것 없이 비슷하게 표현됨을
+  알 수 있었다.
 
 ## 무엇을 배웠나
 
