@@ -12,11 +12,12 @@ func Hello(*core.Request) *core.Response {
 	return res
 }
 
-// Raises Panic
+// Raises 500
 func RaisePanic(*core.Request) *core.Response {
 	return &core.Response{
 		Err: core.StatusError{
-			Code: 500, Err: errors.New("server error yeah~~")}}
+			Code: 500,
+			Err:  errors.New("server error yeah~~")}}
 }
 
 // Unexpected
