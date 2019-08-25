@@ -44,7 +44,8 @@ func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		req.Req.ContentLength,
 		req.Req.UserAgent())
 
-	// Request Middleware
+	// TODO: Request Middleware
+	// Pre-process for request
 
 	// Handle Request
 	defer RecoverPanic(w)
@@ -56,6 +57,6 @@ func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		HandleError(w, r, responseError)
 	}
 
-	// response
+	// Response
 	w.Write([]byte(res.Data))
 }
