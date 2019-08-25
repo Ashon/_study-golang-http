@@ -3,7 +3,7 @@ package app
 import (
 	"errors"
 
-	"github.com/ashon/gotest/core"
+	"github.com/ashon/_study-golang-http/core"
 )
 
 // Returns simple greetings message

@@ -1,4 +1,4 @@
-module github.com/ashon/gotest
+module github.com/ashon/_study-golang-http
 
 go 1.12
 

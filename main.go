@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ashon/gotest/app"
-	"github.com/ashon/gotest/core"
+	"github.com/ashon/_study-golang-http/app"
+	"github.com/ashon/_study-golang-http/core"
 )
 
 func main() {
