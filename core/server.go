@@ -8,7 +8,7 @@ import (
 // Build http server and run
 func RunServer(cfg Config) {
 	for route, view := range cfg.Routes {
-		Logger.Error(route, view)
+		Logger.Info(route, view)
 		http.Handle(route, RequestHandler{view})
 	}
 
