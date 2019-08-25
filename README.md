@@ -34,6 +34,7 @@
     - [Dependency injection](#dependency-injection)
     - [Types in go](#types-in-go)
     - [Other Go Web Framework](#other-go-web-framework)
+  - [함께보면 좋은 내용](#%ed%95%a8%ea%bb%98%eb%b3%b4%eb%a9%b4-%ec%a2%8b%ec%9d%80-%eb%82%b4%ec%9a%a9)
 
 ## Web Framework Overview
 
@@ -236,9 +237,35 @@ app.route('/', methods=['GET'])(hello)
 
 ### Features
 
+Go에서는 http 요청 처리를 위한 간단한 수준의 라이브러리인 `net/http`를 제공해 주는데,
+해당 라이브러리를 통해서 가벼운 HTTP 요청을 주고 받는 애플리케이션을 작성해 볼 수 있다.
+
+```go
+// file: main.go
+package main
+
+import "net/http"
+
+// 8080포트로 "/hello" path로 HTTP 요청이 들어오면
+// "hello world"를 응답해 주는 HTTP API
+func main() {
+    http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+      w.Write([]byte("hello world"))
+    })
+
+    http.ListenAndServe(":8080", nil)
+}
+```
+
+`net/http` 라이브러리를 이용해 API View를 좀 더 편하게 다루기 위한
+인터페이스를 만들어 보고자 했다.
+
 #### View, Route Management
 
 #### Middleware Management
+
+아직 이 부분은 현재 예제에서는 완성하지 못했다. Golang을 써본건 처음이기도 했고, DI를 위한
+방법들을 익히기엔 주말은 너무 짧은 시간이었다.
 
 #### Request Flow Control
 
@@ -261,6 +288,77 @@ app.route('/', methods=['GET'])(hello)
 
 ### panic
 
+Golang에서는 예외처리를 위해 `panic()`, `recover()` 라는 내부 함수를 이용하게 되어 있다.
+다른 언어들에서의 `try-catch` 구문과 비슷한데, Golang에서는 `try-catch` 구문은 없고,
+`defer` 지시자와 패닉이 발생할 코드에서 `recover()` 를 통해 예외가 발생할 수 있는 코드를 감싸도록
+하고 있다.
+
+`defer` 지시자는 파이썬의 `with` 지시자 처럼 스코프 밖으로 빠져나갈 때, 어떤 동작을 할 수 있게
+해 준다.
+
+``` python
+content = ''
+
+# with 지시자를 이용하면 log.txt를 읽고 난 후, file을 close한다.
+with open('log.txt') as f:
+    content = f.read()
+```
+
+``` go
+func ReadFile() {
+    f := os.Open("log.txt")
+    defer f.Close()
+
+    content := f.Read()
+}
+```
+
+이런 식으로 deferred function을 이용해서 scope로 발생한 리소스들을 처리하기 위한 방법들을
+위에서 명시할 수 있도록 해 준다.
+
+어쨌든 Golang에서는 `defer` 지시자를 이용해 애플리케이션의 `panic`을 처리하도록 하고 있다.
+아래 파이썬 코드는 이후에 등장하는 Go로 표현한 코드와 동일한 흐름을 보여준다.
+
+``` python
+try:
+    raise Error('exception raised')
+except Exception as e:
+    print('recovered: ', e)
+
+# stdout
+# recovered: exception raised
+```
+
+``` go
+package main
+
+import "fmt"
+
+func main() {
+    // 프로그램 동작 이후에 deffered function이 수행된다.
+    defer func() {
+        // recover() 함수를 실행함으로써 panic이 발생한 지점 전체를 감싼다.
+        if r := recover(); r != nil {
+            fmt.Println(fmt.Sprintf("recovered: %s", r))
+        }
+    }()
+
+    panic("exception raised")
+}
+
+// stdout
+// recovered: exception raised
+```
+
+아직 왜 굳이 `defer`를 써서 귀찮게 예외처리를 하게 만들었는지는 모르겠지만
+이런 흐름을 가지고 있는게 신기했다.
+
+아마 `C`언어에서 예외가 발생했을 경우, `goto`로 빠지도록 하는 행위와 비슷한 것 같다.
+(이런 방법을 요즘 `C`에서도 쓰는지는 잘 모르겠다.)
+
+패닉이 발생하고 다양한 예외 종류가 있다면.. Go 코드에서 가독성 좋게 표현할 수 있을까?
+하는 생각도 든다.
+
 ### interface
 
 ### package system
@@ -269,6 +367,21 @@ app.route('/', methods=['GET'])(hello)
 
 ### Dependency injection
 
+아직 프레임워크에서 정한 리퀘스트 라이프사이클을 유저 영역의 코드로 제어하기 위한 방법을 구현하기
+위해서는 DI가 필수적이라고 생각한다.
+
+Go에서는 어떻게 DI를 구현하고 사용할 수 있는지 이해 할 필요가 있다.
+
 ### Types in go
 
+Go의 타입 시스템을 정확하게 이해하고 작성한 코드가 아니므로, 이 부분을 정확하게 알면 더 깔끔한
+코드를 작성할 수 있을 것 같다.
+
 ### Other Go Web Framework
+
+아직 Go의 생태계를 잘 모르기 때문에, 다른 웹 프레임워크는 어떤 식으로 구현되어 있는지 알아 볼 필요가 있다.
+
+## 함께보면 좋은 내용
+
+- Python Importlib
+- Go net/http

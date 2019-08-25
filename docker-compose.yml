@@ -4,3 +4,5 @@ services:
   server:
     build:
       context: .
+    ports:
+    - 8088:8088
