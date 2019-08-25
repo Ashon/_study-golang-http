@@ -197,7 +197,7 @@ from flask import Flask
 app = Flask(__name__)
 
 
-@app.route()
+@app.route('/hello')
 def hello():
     return 'hello world'
 ```
@@ -219,7 +219,7 @@ from views import hello
 
 
 app = Flask(__name__)
-app.route('/', methods=['GET'])(hello)
+app.route('/hello', methods=['GET'])(hello)
 ```
 
 이런식으로 작성하면 비즈니스 로직을 애플리케이션 로직으로부터 분리해서 작게 관리할 수 있다.
@@ -262,12 +262,16 @@ func main() {
 
 #### View, Route Management
 
+작성 중
+
 #### Middleware Management
 
 아직 이 부분은 현재 예제에서는 완성하지 못했다. Golang을 써본건 처음이기도 했고, DI를 위한
 방법들을 익히기엔 주말은 너무 짧은 시간이었다.
 
 #### Request Flow Control
+
+작성 중
 
 ## 소감
 
@@ -284,7 +288,11 @@ func main() {
 
 ### net/http
 
+작성 중
+
 ### go mod
+
+작성 중
 
 ### panic
 
@@ -354,21 +362,36 @@ func main() {
 이런 흐름을 가지고 있는게 신기했다.
 
 아마 `C`언어에서 예외가 발생했을 경우, `goto`로 빠지도록 하는 행위와 비슷한 것 같다.
-(이런 방법을 요즘 `C`에서도 쓰는지는 잘 모르겠다.)
+(~~내가 C언어로 업을 쌓아오진 않았지만.. 이런 방법을 요즘 `C`에서도 쓰는지는 잘 모르겠다.~~)
 
 패닉이 발생하고 다양한 예외 종류가 있다면.. Go 코드에서 가독성 좋게 표현할 수 있을까?
 하는 생각도 든다.
 
 ### interface
 
+Golang 에서는 `다형성(Polymorphism)`을 실현하기 위해 `interface`를 지원한다.
+Java에서와 마찬가지로 메서드 시그니처들의 모음이다.
+
+Python에서는 굳이 인터페이스를 만들지 않았지만, `duck-typing`을 통해 다형성을 지원한다.
+
+`panic()` 함수의 시그니처는 `func panic(v interface{})` 인데, 이때 인자로 들어가는
+`interface{}`는 `any type`으로써 사용되는 것 같다.
+
 ### package system
+
+내가 처음 맨땅에 헤딩하면서 가장 헷갈렸던 부분인데, Golang에서는 앞글자가 대문자가 아니면
+모듈 밖으로 노출되지 않는다는 것이었다.
+(~~이것때문에 처음에 소스코드를 쪼개면서 엄청 삽질했는데..~~)
+
+해당 기능은 Golang의 스펙이며, 다른 언어를 할 줄 알지만..
+처음 Golang을 접한다면 꼭 알고 넘어가야 할 부분이라고 생각한다.
 
 ## 더 알아보고픈 내용
 
 ### Dependency injection
 
-아직 프레임워크에서 정한 리퀘스트 라이프사이클을 유저 영역의 코드로 제어하기 위한 방법을 구현하기
-위해서는 DI가 필수적이라고 생각한다.
+현재까지 나의 경험으로는 프레임워크에서 정한 리퀘스트 라이프사이클을
+유저 영역의 코드로 제어하기 위한 방법을 구현하기 위해서는 DI가 필수적이라고 생각한다.
 
 Go에서는 어떻게 DI를 구현하고 사용할 수 있는지 이해 할 필요가 있다.
 
@@ -383,5 +406,9 @@ Go의 타입 시스템을 정확하게 이해하고 작성한 코드가 아니�
 
 ## 함께보면 좋은 내용
 
-- Python Importlib
-- Go net/http
+- [Python Importlib](https://docs.python.org/3/library/importlib.html)
+- [Defer Panic and Recover](https://blog.golang.org/defer-panic-and-recover)
+- [Go Exported_identifiers](https://golang.org/ref/spec#Exported_identifiers)
+- [Go net/http](https://golang.org/pkg/net/http/)
+- [Go interface](https://gobyexample.com/interfaces)
+- [Go Data Structures: Interfaces](https://research.swtch.com/interfaces)
