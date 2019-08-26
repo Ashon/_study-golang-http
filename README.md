@@ -21,8 +21,8 @@
   - [Implementation in Go](#implementation-in-go)
     - [Features](#features)
       - [View, Route Management](#view-route-management)
-      - [Middleware Management](#middleware-management)
       - [Request Flow Control](#request-flow-control)
+      - [Middleware Management](#middleware-management)
   - [소감](#%ec%86%8c%ea%b0%90)
   - [무엇을 배웠나](#%eb%ac%b4%ec%97%87%ec%9d%84-%eb%b0%b0%ec%9b%a0%eb%82%98)
     - [net/http](#nethttp)
@@ -250,28 +250,89 @@ import "net/http"
 // "hello world"를 응답해 주는 HTTP API
 func main() {
     http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-      w.Write([]byte("hello world"))
+        w.Write([]byte("hello world"))
     })
 
     http.ListenAndServe(":8080", nil)
 }
 ```
 
-`net/http` 라이브러리를 이용해 API View를 좀 더 편하게 다루기 위한
-인터페이스를 만들어 보고자 했다.
+`net/http` 라이브러리를 이용해 간단한 예제 코드를 작성해 보았고, 이 예제코드로부터 HTTP 리퀘스트를
+효과적으로 다룰 수 있고, 비즈니스 로직을 잘 분리하는 간단한 프레임위크를 만들어 보고자 했다.
 
 #### View, Route Management
 
-작성 중
+첫 예제로부터 어떤 route에 매핑된 리퀘스트 처리 함수가 엉겨붙어 있는 모습을 알 수 있다.
+
+``` go
+// 이 함수 블럭에서는 application에 route를 등록하고,
+// 해당 요청에 대한 비즈니스 로직을 처리하며
+// 요청에 응답을 처리하는 로직들이 다같이 존재하고 있다.
+http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+    w.Write([]byte("hello world"))
+})
+```
+
+일단 처음 Golang을 접하는 입장에서 당장 주석에 써 놓은 관심사 별로 코드를 쪼갤때 쉽다고 생각했던
+부분은 func를 따로 정의하고, `http.HandleFunc`에 route와 뷰 함수를 등록 해 보는 것이었다.
+
+``` go
+// 뷰 함수를 분리한다.
+//
+// 정확히는 모르지만, http.ResponseWrite가 하는 동작으로 보아
+// 응답을 위한 스트림을 뷰에서 바로 처리하도록 되어 있는 것 같았다.
+// 이런 스트림 처리는 비즈니스 로직단에서 하기 보다는,
+// 좀 더 프레임워크 레벨에서 고도화 시킬 필요가 있다고 생각했다.
+func HelloWorld(w http.ResponseWrite, r *http.Request) {
+    w.Write([]byte("hello world"))
+}
+
+// main에서 app을 조립하고 동작시킨다.
+func main() {
+    http.HandleFunc("/hello", HelloWorld)
+    http.ListenAndServe(":8080", nil)
+}
+```
+
+뷰는 잘 분리 되었지만, main app을 빌드할 때, route 설정 또한 사용자 설정으로 다루게 하고 싶었다.
+Python의 사용경험을 살려 dict 타입으로 route와 함수를 매핑하는 식의 경험으로 풀어보고자 했다.
+
+``` go
+func main() {
+    // Go에서는 map을 이용해 dictionary 형태의 데이터 타입을 만들 수 있다.
+    var Routes = map[string](func(w http.ResponseWriter, r *http.Request)){
+        "/hello": HelloWorld,
+    }
+
+    // 많은 route view 매핑을 등록하기 위해 반복문을 사용한다.
+    for route, view := range Routes {
+        http.HandleFunc(route, view)
+    }
+}
+```
+
+이런 형태로 라우트와 비즈니스 로직 처리를 위한 함수를 애플리케이션 빌드 로직과 분리해서
+관리할 수 있는 형태가 되었다.
+
+#### Request Flow Control
+
+view와 route관리는 떨어졌지만, 여전히 view에서 응답 스트림을 직접 컨트롤 하는 부분이 마음에
+들지 않아서 이 부분도 따로 떼어서 처리 할 수 있는지 알아보았다.
+
+최대한 요청과 응답 흐름을 처리하는 부분과, 요청이 들어왔을 때의 로직을 분리해서 관리하면 좋겠다는
+생각이 들어서 이 부분을 처리하기 위한 방법을 알아보던 중..
+
+`net/http`에는 `ServeHTTP(rw ResponseWriter, req *Request)`라는
+인터페이스 함수를 제공해 주는데, 이를 오버라이드 함으로써 애플리케이션으로 흐르는 전체 리퀘스트를 직접
+컨트롤 할 수 있는 걸 알 수 있었다. `Python Flask`와 마찬가지로 이 라이브러리는 단일 애플리케이션 으로 들어오는 요청에 대한 동시성 처리는 제공해 주지는 않는 것 같다.
+
+들어오는 request는 비즈니스 로직으로 던지고, 프레임워크에서 적당한 리스폰스 인터페이스를 제공해 주고
+이를 이용해 스트림을 제어하면 좋겠다는 생각이 들었다.
 
 #### Middleware Management
 
 아직 이 부분은 현재 예제에서는 완성하지 못했다. Golang을 써본건 처음이기도 했고, DI를 위한
 방법들을 익히기엔 주말은 너무 짧은 시간이었다.
-
-#### Request Flow Control
-
-작성 중
 
 ## 소감
 
@@ -410,5 +471,6 @@ Go의 타입 시스템을 정확하게 이해하고 작성한 코드가 아니�
 - [Defer Panic and Recover](https://blog.golang.org/defer-panic-and-recover)
 - [Go Exported_identifiers](https://golang.org/ref/spec#Exported_identifiers)
 - [Go net/http](https://golang.org/pkg/net/http/)
+- [Go net/http server.go](https://golang.org/src/net/http/server.go)
 - [Go interface](https://gobyexample.com/interfaces)
 - [Go Data Structures: Interfaces](https://research.swtch.com/interfaces)
