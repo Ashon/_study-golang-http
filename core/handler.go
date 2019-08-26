@@ -28,21 +28,27 @@ func InternalServerError(w http.ResponseWriter) {
 }
 
 func RecoverPanic(w http.ResponseWriter) {
+	Logger.Debug("RecoverPanic")
 	if r := recover(); r != nil {
 		Logger.Error("Server Panic:", r)
 		InternalServerError(w)
 	}
 }
 
-func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := Request{Req: r}
-
+func LogRequest(req *Request, res *Response) {
+	Logger.Debug("LogRequest")
 	Logger.Info(
 		req.Req.Proto,
 		req.Req.Method,
 		req.Req.URL.Path,
-		req.Req.ContentLength,
+		// req.Req.ContentLength,
+		len(res.Data),
+		// err,
 		req.Req.UserAgent())
+}
+
+func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	req := Request{Req: r}
 
 	// TODO: Request Middleware
 	// Pre-process for request
@@ -59,4 +65,5 @@ func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Response
 	w.Write([]byte(res.Data))
+	LogRequest(&req, res)
 }
